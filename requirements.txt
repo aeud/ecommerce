@@ -1,0 +1,7 @@
+django
+python-memcached
+django-storages-redux
+boto
+libsass
+django-compressor
+django-sass-processor
