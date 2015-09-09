@@ -1,4 +1,5 @@
 django
+elasticsearch
 python-memcached
 django-storages-redux
 boto
