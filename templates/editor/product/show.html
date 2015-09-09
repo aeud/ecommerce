@@ -1,0 +1,14 @@
+{{ product.name }}
+
+<ul>
+    {% for v in variants %}
+        <li>{{ v.name }} - {{ v.color }}</li>
+    {% endfor %}
+</ul>
+
+<form action="{% url 'editor_variant_new' product_id=product.id %}" method="POST">
+    {% csrf_token %}
+    <input type="text" name="name">
+    <input type="text" name="color">
+    <button type="submit">Submit</button>
+</form>

@@ -8,7 +8,7 @@ class Product(models.Model):
     name       = models.TextField()
     created_at = models.DateTimeField(editable=False)
     updated_at = models.DateTimeField()
-    created_by = models.ForeignKey(User, db_column='user_id')
+#    created_by = models.ForeignKey(User, db_column='user_id')
     is_active  = models.BooleanField()
 
     def save(self, *args, **kwargs):
@@ -91,7 +91,7 @@ class Variant(models.Model):
     color      = models.TextField()
     created_at = models.DateTimeField(editable=False)
     updated_at = models.DateTimeField()
-    created_by = models.ForeignKey(User, db_column='user_id')
+#    created_by = models.ForeignKey(User, db_column='user_id')
     is_active  = models.BooleanField()
 
     def save(self, *args, **kwargs):
