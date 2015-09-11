@@ -18,7 +18,7 @@ def new(request):
         p = Product(name=post_name)
         p.save()
         p.index()
-        return redirect('frame.ecommerce.controllers.product.index')
+        return redirect('apps.editor.controllers.product.index')
     else:
         return render(request, 'editor/product/new.html')
 

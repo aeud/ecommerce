@@ -7,7 +7,8 @@
 </ul>
 <ul>
     {% for product in results %}
-    <li>{{ product.product_name }} - {{ product.indexed_at }}</a></li>
+    <li><a href="{% url 'editor_product_show' product_id=product.product_id %}">{{ product.product_name }}</a> - {{ product.indexed_at }}</a></li>
     {% endfor %}
 </ul>
+<a href="{% url 'editor_product_new' %}">New</a>
 {% endblock body %}

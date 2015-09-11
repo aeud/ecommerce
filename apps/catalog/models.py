@@ -25,6 +25,7 @@ class Product(models.Model):
     def index(self, *args, **kwargs):
         es = Elasticsearch()
         json = {
+            'product_id': self.id,
             'product_name': self.name,
             'is_product_active': self.is_active,
             'indexed_at': datetime.datetime.now(),
