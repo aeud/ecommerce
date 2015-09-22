@@ -22,49 +22,29 @@ class Product(models.Model):
         self.unindex()
         return super(Product, self).delete(*args, **kwargs)
 
-    def index(self, *args, **kwargs):
-        es = Elasticsearch()
-        json = {
+    def jsonify(self): 
+        return {
             'product_id': self.id,
             'product_name': self.name,
             'is_product_active': self.is_active,
             'indexed_at': datetime.datetime.now(),
-            'variants': list(map(lambda v: {
-                'variant_name': v.name,
-                'variant_color': v.color,
-                'is_variant_active': v.is_active,
-            }, Variant.objects.filter(product=self)))
+            'variants': [v.jsonify() for v in Variant.objects.filter(product=self)]
         }
-        es.index(
-            index    = 'ecommerce',
-            doc_type = 'product',
-            id       = str(self.id),
-            body     = json
-        )
-        return self
-    def search(*args, **kwargs):
-        es = Elasticsearch()
-        query = kwargs.get('query', {'match_all': {}})
+
+    def index(self):
+        Elasticsearch().index(index='ecommerce', doc_type='product', id=str(self.id), body=self.jsonify())
+
+    def unindex(self):
+        Elasticsearch().delete(index='ecommerce', doc_type='product', id=str(self.id))
+
+    def search(**kwargs):
+        query = kwargs.get('query', dict(match_all={}))
         size = kwargs.get('size', 10)
         sort = kwargs.get('sort', ['_score'])
-        results = es.search(
-            index    = 'ecommerce',
-            doc_type = 'product',
-            body     = {
-                'query': query,
-                'size': size,
-                'sort': sort,
-            }
-        )
-        return map(lambda x: x['_source'], results['hits']['hits'])
-    def unindex(self):
-        es = Elasticsearch()
-        es.delete(
-            index    = 'ecommerce',
-            doc_type = 'product',
-            id       = str(self.id)
-        )
-        return self
+        body = dict(query=query, size=size, sort=sort)
+        results = Elasticsearch().search(index='ecommerce', doc_type='product', body=body)
+        return [x.get('_source') for x in results.get('hits').get('hits')]
+
     def es_map():
         es = Elasticsearch()
         es.indices.put_mapping(
@@ -76,6 +56,7 @@ class Product(models.Model):
                         'variants': {
                             'type': 'nested',
                             'properties': {
+                                'variant_id': { 'type': 'integer' },
                                 'variant_name': { 'type': 'string' },
                                 'variant_color': { 'type': 'string' },
                             }
@@ -101,3 +82,13 @@ class Variant(models.Model):
             self.is_active = True
         self.updated_at = datetime.datetime.now()
         return super(Variant, self).save(*args, **kwargs)
+
+    def jsonify(self): 
+        return {
+            'variant_id': self.id,
+            'variant_name': self.name,
+            'variant_color': self.color,
+            'is_variant_active': self.is_active,
+        }
+
+

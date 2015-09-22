@@ -1,16 +1,50 @@
-from django.shortcuts import render
-from django.shortcuts import redirect
-from django.http import Http404
+from django.shortcuts import render, redirect
+from django.http import Http404, HttpResponse
+import json
 
 from apps.catalog.models import Product, Variant
 
 def index(request):
     products = Product.objects.all()
-    results = Product.search(query={'match_all': {}}, size=5, sort=[{'indexed_at': 'desc'}])
+    results = Product.search()
     return render(request, 'editor/product/index.html', {
         'products': products,
         'results': results
     })
+
+def indexJSON(request):
+    results = Product.search(query={
+        'function_score': {
+            'functions': [
+                {
+                    'gauss': {
+                        'product_id': {
+                            'origin': 2,
+                            'scale': 1
+                        }
+                    }
+                }, {
+                    'filter': {
+                        'match': {
+                            'product_id': 1
+                        }
+                    },
+                    'gauss': {
+                        'product_id': {
+                            'origin': 0,
+                            'scale': 1
+                        }
+                    },
+                    'weight': 0.01
+                }
+            ],
+            'query': {
+                'match_all': {}
+            },
+            'min_score': 0
+        }
+    })
+    return HttpResponse(json.dumps(results), content_type="application/json")
 
 def new(request):
     if request.method == 'POST':
