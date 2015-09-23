@@ -114,3 +114,28 @@ CACHES = {
         'LOCATION': '127.0.0.1:11211',
     }
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/Users/adrien/Desktop/debug.log',
+        },
+#        'socket': {
+#            'level': 'DEBUG',
+#            'class': 'logging.handlers.SocketHandler',
+#            'host': 'localhost',
+#            'port': 9200
+#        },
+    },
+    'loggers': {
+        'ecommerce.analytics': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}

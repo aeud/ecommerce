@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import Http404, HttpResponse
 import json
+import logging
 
 from apps.catalog.models import Product, Variant
 
@@ -13,36 +14,35 @@ def index(request):
     })
 
 def indexJSON(request):
+    function_score = json.loads(request.GET.get('function_score', '[]'))
     results = Product.search(query={
-        'function_score': {
-            'functions': [
-                {
-                    'gauss': {
-                        'product_id': {
-                            'origin': 2,
-                            'scale': 1
-                        }
-                    }
-                }, {
-                    'filter': {
-                        'match': {
-                            'product_id': 1
-                        }
-                    },
-                    'gauss': {
-                        'product_id': {
-                            'origin': 0,
-                            'scale': 1
-                        }
-                    },
-                    'weight': 0.01
-                }
-            ],
-            'query': {
-                'match_all': {}
-            },
-            'min_score': 0
-        }
+        'function_score': function_score
+#        'function_score': {
+#            'functions': [
+#                {
+#                    'gauss': {
+#                        'product_id': {
+#                            'origin': 2,
+#                            'scale': 1
+#                        }
+#                    }
+#                }, {
+#                    'gauss': {
+#                        'product_id': {
+#                            'origin': 0,
+#                            'scale': 1
+#                        }
+#                    },
+#                    'weight': 0.01
+#                }
+#            ],
+#            'query': {
+#                'query_string': {
+#                    'query': 'variants.variant_id:3 OR variants.variant_id:2'
+#                }
+#            },
+#            'min_score': 0
+#        }
     })
     return HttpResponse(json.dumps(results), content_type="application/json")
 
@@ -62,6 +62,8 @@ def show(request, product_id):
         variants = Variant.objects.filter(product=product)
     except Product.DoesNotExist:
         raise Http404("Product does not exist")
+    logger = logging.getLogger('ecommerce.analytics')
+    logger.info("View %s" % str(product.name))
     return render(request, 'editor/product/show.html', {
         'product': product,
         'variants': variants,

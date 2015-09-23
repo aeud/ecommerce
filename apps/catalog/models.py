@@ -53,15 +53,14 @@ class Product(models.Model):
             body = {
                 'product': {
                     'properties': {
-                        'variants': {
-                            'type': 'nested',
-                            'properties': {
-                                'variant_id': { 'type': 'integer' },
-                                'variant_name': { 'type': 'string' },
-                                'variant_color': { 'type': 'string' },
-                            }
-
-                        }
+#                        'variants': {
+#                            'type': 'nested',
+#                            'properties': {
+#                                'variant_id': { 'type': 'integer' },
+#                                'variant_name': { 'type': 'string' },
+#                                'variant_color': { 'type': 'string' },
+#                            }
+#                        }
                     }
                 }
             }

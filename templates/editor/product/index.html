@@ -11,4 +11,87 @@
     {% endfor %}
 </ul>
 <a href="{% url 'editor_product_new' %}">New</a>
+<div id="searchAlgorithm" ng-controller="SearchCtrl">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="well">
+                <form>
+                    <input type="text" class="form-control" ng-model="factor" ng-change="queryChange()">
+                </form>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="well">
+                <form>
+                    <input type="text" class="form-control" ng-model="query" ng-change="queryChange()">
+                </form>
+            </div>
+            <div class="list-group">
+                 <a href="#" class="list-group-item" ng-repeat="r in results">{[{ r.product_name }]}</a>
+            </div>
+        </div>
+    </div> 
+</div>
 {% endblock body %}
+
+{% block javascripts %}
+{{ block.super }} 
+<script>
+var ecommerceApp = angular.module('ecommerceApp', []);
+
+ecommerceApp.config(function($interpolateProvider){
+    $interpolateProvider.startSymbol('{[{').endSymbol('}]}');
+});
+
+ecommerceApp.controller('SearchCtrl', function ($scope, $http) {
+    $scope.query = 'product_id:1';
+    $scope.factor = 1;
+    $scope.function_score = {
+        'functions': [
+            {
+                'gauss': {
+                    'product_id': {
+                        'origin': 2,
+                        'scale': 1
+                    }
+                }
+            }, {
+                'gauss': {
+                    'product_id': {
+                        'origin': 0,
+                        'scale': 1
+                    }
+                },
+                'weight': 0.01
+            }
+        ],
+        'query': {
+            'query_string': {
+                'query': $scope.query
+            }
+        },
+        'min_score': 0
+    }
+    function fetchResults(callback){
+        $scope.function_score.query.query_string.query = $scope.query;
+        $http({
+            'url': '{% url 'editor_product_index_json' %}',
+            'params': {
+                'query': $scope.query,
+                'function_score': JSON.stringify($scope.function_score)
+            }
+        }).success(function(data){
+            $scope.results = data;
+            if (typeof callback != 'undefined') callback(null, data);
+        }).error(function(err){
+            if (typeof callback != 'undefined') callback(err);
+        });
+    }
+    $scope.queryChange = function(){
+        fetchResults();
+    }
+    fetchResults();
+    $scope.test = function(){ console.log('test'); }
+});
+</script>
+{% endblock javascripts %}
